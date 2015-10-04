@@ -14,7 +14,7 @@ const AlbumResult = t.struct({
   name: t.String,
   artist: t.String,
   year: t.Number,
-  albumArtRef: t.String
+  albumId: t.String
 })
 
 const SearchResultTypes = {
@@ -22,9 +22,22 @@ const SearchResultTypes = {
   album: '3'
 }
 
+const Track = t.struct({
+  title: t.String,
+  album: t.String,
+  artist: t.String,
+  genre: t.String,
+  durationMillis: t.String,
+  playCount: t.Number,
+  nid: t.String
+  // TODO: Figure out shape
+  //albumArtRef: t.Object
+})
+
 module.exports = {
   TrackResult,
   AlbumResult,
   ArtistResult,
-  SearchResultTypes
+  SearchResultTypes,
+  Track
 }

@@ -1,7 +1,7 @@
 const Promise = require('bluebird'); Promise.longStackTraces()
 const pm = new (require('playmusic'))(); Promise.promisifyAll(pm)
 const fs = require('fs'); Promise.promisifyAll(fs)
-const rp = require('request-promise')
+const Player = require('./player')
 const request = require('request')
 const path = require('path')
 const mkdirp = Promise.promisify(require('mkdirp'))
@@ -11,7 +11,8 @@ const ChildProcess = require('child_process')
 const {TrackResult, 
        AlbumResult, 
        ArtistResult, 
-       SearchResultTypes} = require('./concepts')
+       SearchResultTypes,
+       Track} = require('./concepts')
 
 const searchFilters = {
   track: (result) => result.type === SearchResultTypes.track,
@@ -33,12 +34,15 @@ const argRunners = {
   },
   'download-song': ([artist, song]) => {
     search(`${song} - ${artist}`, searchFilters.track)
-    .then(([result]) => {
-      return download(result)
-    })
-    .then((trackPath) => {
-      ChildProcess.exec(`dlc -w ${trackPath}`)
-    })
+    .then(download)
+    .then(Player.play)
+  },
+  'download-album': ([artist, album]) => {
+    search(`${album} - ${artist}`, searchFilters.album)
+    .then(downloadAlbum)
+    .then((tracks) => {
+      // TODO: figure out how to do make mplayer do this properly
+    })   
   }
 }
 
@@ -54,11 +58,12 @@ function search(query, filter = () => true) {
         if(mapping[result.type] == null) return null;
 
         return mapping[result.type](result)
-      }).compact().value()
+      }).compact().first().value()
     })
   )
 }
 
+// TODO: Show progress bar in UI, will need to stack to support album downloads
 function download(track) {
   const trackPath = buildTrackPath(track)
   const trackDirectory = path.dirname(trackPath)
@@ -76,9 +81,19 @@ function download(track) {
           .pipe(fs.createWriteStream(trackPath))
       })
 
-      return trackUrl
+      return trackPath
     })
   )
+}
+
+function downloadAlbum(album) {
+  return new Promise((resolve) => {
+    pm.getAlbumAsync(album.albumId, true)
+    .then((playAlbum) => {
+      const tracks = playAlbum.tracks.map(Track)
+      Promise.all(tracks.map(download)).then(resolve)
+    })
+  })
 }
 
 function getTrackFilename (track) {
@@ -111,7 +126,7 @@ function buildTrackPath(track) {
 }
 
 function sanitizeFilename (filename) {
-  return filename.replace(/\//g, '|');
+  return filename.replace(/(\/|\?)/g, '');
 }
 
 function processCommandLine() {
