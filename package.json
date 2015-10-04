@@ -1,0 +1,30 @@
+{
+  "name": "gm-cli",
+  "version": "1.0.0",
+  "description": "Google Music powered CLI music player",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UberMouse/gm-cli.git"
+  },
+  "author": "Taylor Lodge <ubermouse894@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/UberMouse/gm-cli/issues"
+  },
+  "homepage": "https://github.com/UberMouse/gm-cli",
+  "dependencies": {
+    "bluebird": "^2.10.2",
+    "lodash": "^3.10.1",
+    "mkdirp": "^0.5.1",
+    "playmusic": "^2.0.3",
+    "request-promise": "^0.4.3",
+    "tcomb": "^2.5.0"
+  },
+  "devDependencies": {
+    "babel": "^5.8.23"
+  }
+}
