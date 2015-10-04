@@ -2,6 +2,7 @@ const Promise = require('bluebird'); Promise.longStackTraces()
 const pm = new (require('playmusic'))(); Promise.promisifyAll(pm)
 const fs = require('fs'); Promise.promisifyAll(fs)
 const rp = require('request-promise')
+const request = require('request')
 const path = require('path')
 const mkdirp = Promise.promisify(require('mkdirp'))
 const _ = require('lodash')
@@ -32,7 +33,7 @@ const argRunners = {
   'download-song': ([artist, song]) => {
     search(`${song} - ${artist}`, searchFilters.track)
     .then(([result]) => {
-      download(result)
+      return download(result)
     })
     .then((trackPath) => {
       ChildProcess.exec(`dlc -w ${trackPath}`)
@@ -67,9 +68,12 @@ function download(track) {
   return (
     pm.getStreamUrlAsync(track.nid)
     .then(async (trackUrl) => {
-      const trackData = await rp(trackUrl)
       await mkdirp(trackDirectory)
-      fs.writeFileSync(trackPath, trackData)
+      await new Promise((resolve, reject) => {
+          request(trackUrl)
+          .on('end', resolve)
+          .pipe(fs.createWriteStream(trackPath))
+      })
 
       return trackUrl
     })
