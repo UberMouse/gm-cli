@@ -6,6 +6,7 @@ const request = require('request')
 const path = require('path')
 const mkdirp = Promise.promisify(require('mkdirp'))
 const _ = require('lodash')
+const config = require('./config')
 const ChildProcess = require('child_process')
 const {TrackResult, 
        AlbumResult, 
@@ -86,7 +87,7 @@ function getTrackFilename (track) {
 
 function getAlbumDirectory (album) {
   return path.join(
-    './',
+    config.music_root,
     sanitizeFilename(album.artist),
     sanitizeFilename(album.name)
   );
@@ -94,7 +95,7 @@ function getAlbumDirectory (album) {
 
 function getTrackDirectory (track) {
   return path.join(
-    './',
+    config.music_root,
     sanitizeFilename(track.artist),
     sanitizeFilename(track.album)
   );
